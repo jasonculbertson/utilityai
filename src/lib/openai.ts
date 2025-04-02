@@ -28,7 +28,7 @@ function extractWithRegex(text: string) {
   // More flexible billing period regex that can handle various formats
   const billingPeriodRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*\((\d+)\s*billing\s*days\)/i;
   // Enhanced rate schedule regex to handle various OCR misreadings and formats
-  const rateScheduleRegex = /(?:Rate\s+(?:Schedule|Plan)|SERVICE\s+DETAILS[^]*?Rate[^]*?:)[^]*?([A-Z]-?[A-Z0-9]+-?[A-Z0-9]?)\s+([^\n]+)/i;
+  const rateScheduleRegex = /(?:Rate\s+(?:Schedule|Plan)|SERVICE\s+DETAILS[^]*?Rate[^]*?:)[^]*?([A-Z][A-Z0-9]?[A-Z0-9]?[A-Z0-9]?[A-Z0-9]?)\s+([^\n]+)/i;
   const etouRateRegex = /(?:E-?TOU-?|ETOU)[^]*?([BCD])\b/i;
 
   // Energy Charges Patterns
@@ -63,7 +63,8 @@ function extractWithRegex(text: string) {
   // Define the valid PG&E rate plans
   const VALID_RATE_PLANS = [
     "E-1", "E-TOU-C", "E-TOU-D", "EV-A", "EV-B", "EV2-A", "EV2A", 
-    "B-1", "B-6", "B-10", "B-19", "B-20", "BEV1", "BEV2", "ETOUB"
+    "B-1", "B-6", "B-10", "B-19", "B-20", "BEV1", "BEV2", "ETOUB",
+    "ETOUC", "ETOUD"
   ];
 
   // Function to validate and correct rate plans
@@ -107,17 +108,30 @@ function extractWithRegex(text: string) {
     return null;
   }
 
-  const rateScheduleMatch = rateScheduleRegex.exec(text);
-  if (rateScheduleMatch) {
-    // Extract and validate the rate plan
-    const detectedPlan = rateScheduleMatch[1];
-    const validatedPlan = validateRatePlan(detectedPlan);
-    
-    if (validatedPlan) {
-      result.billingInfo.rateSchedule = `${validatedPlan} ${rateScheduleMatch[2] || ''}`;
-    } else {
-      // Preserve the original if validation fails
-      result.billingInfo.rateSchedule = `${detectedPlan} ${rateScheduleMatch[2] || ''}`;
+  // First, look explicitly for EV2A pattern since it's commonly misread
+  const ev2aRegex = /Rate\s+Schedule:?\s*EV2A\s+Home\s+Charging/i;
+  const ev2aMatch = ev2aRegex.exec(text);
+  
+  if (ev2aMatch) {
+    // If we specifically find EV2A, use it directly
+    result.billingInfo.rateSchedule = "EV2A Home Charging";
+    console.log("Found EV2A rate plan via specific regex pattern");
+  } else {
+    // Otherwise use the general regex pattern
+    const rateScheduleMatch = rateScheduleRegex.exec(text);
+    if (rateScheduleMatch) {
+      // Extract and validate the rate plan
+      const detectedPlan = rateScheduleMatch[1];
+      const validatedPlan = validateRatePlan(detectedPlan);
+      
+      console.log(`Detected rate plan: '${detectedPlan}', validated as: '${validatedPlan}'`);
+      
+      if (validatedPlan) {
+        result.billingInfo.rateSchedule = `${validatedPlan} ${rateScheduleMatch[2] || ''}`;
+      } else {
+        // Preserve the original if validation fails
+        result.billingInfo.rateSchedule = `${detectedPlan} ${rateScheduleMatch[2] || ''}`;
+      }
     }
   }
 
