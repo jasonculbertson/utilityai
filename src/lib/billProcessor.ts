@@ -16,9 +16,13 @@ export async function processBill(filePath: string) {
     );
     
     // Save extracted text for debugging
-    const textOutputPath = path.join(os.tmpdir(), `${path.basename(filePath, '.pdf')}_ocr_text.txt`);
+    const originalFilename = path.basename(filePath, '.pdf');
+    const textOutputPath = path.join(os.tmpdir(), `${originalFilename}_ocr_text.txt`);
     fs.writeFileSync(textOutputPath, extractedText);
     console.log(`Saved extracted OCR text to ${textOutputPath} for debugging`);
+    
+    // Store the original filename as a global variable for the debug endpoint
+    global.lastProcessedBillFilename = originalFilename;
 
     
     console.log('Text extraction complete, analyzing with OpenAI...');
