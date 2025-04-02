@@ -13,7 +13,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Basic rate limiting
-  const ip = request.ip ?? 'anonymous'
+  // Get IP from headers (x-forwarded-for contains client IP when behind a proxy)
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : request.headers.get('x-real-ip') ?? 'anonymous'
   const now = Date.now()
   const requestData = ipRequestMap.get(ip)
 
