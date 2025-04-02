@@ -68,11 +68,39 @@ function extractWithRegex(text: string) {
   ];
 
   // Function to validate and correct rate plans
-  function validateRatePlan(detectedPlan: string | null): string | null {
+  function validateRatePlan(detectedPlan: string | null, fullText: string): string | null {
     if (!detectedPlan) return null;
     
     // Normalize the detected plan (remove spaces, make uppercase)
     const normalizedPlan = detectedPlan.replace(/\s+/g, "").toUpperCase();
+
+    // If the detected plan is just Time-of-Use or similar, try to determine the actual plan from peak hours
+    if (normalizedPlan === 'TIMEOFUSE' || normalizedPlan.includes('TOU')) {
+      // Check for peak hours in the text
+      const peakHoursRegex = /Peak\s+Pricing\s+(\d+)[-–]\s*(\d+)\s*p\.?m\.?/i;
+      const peakHoursMatch = peakHoursRegex.exec(fullText);
+      
+      if (peakHoursMatch) {
+        const startHour = parseInt(peakHoursMatch[1]);
+        const endHour = parseInt(peakHoursMatch[2]);
+        
+        console.log(`Detected peak hours: ${startHour}-${endHour} p.m.`);
+        
+        // Match hours to rate plans
+        if (startHour === 4 && endHour === 9) {
+          console.log('Peak hours 4-9 p.m. match E-TOU-C or EV2A');
+          // Further check for EV charging or EV terms
+          if (fullText.match(/EV2?A|Electric\s+Vehicle|Home\s+Charging/i)) {
+            console.log('EV terms found in bill, identifying as EV2A');
+            return 'EV2A';
+          }
+          return 'ETOUC';  // Default to ETOUC if no EV indicators
+        } else if (startHour === 5 && endHour === 8) {
+          console.log('Peak hours 5-8 p.m. match E-TOU-D');
+          return 'ETOUD';
+        }
+      }
+    }
     
     // First check if the plan is already in our valid list (case insensitive)
     for (const plan of VALID_RATE_PLANS) {
@@ -122,7 +150,7 @@ function extractWithRegex(text: string) {
     if (rateScheduleMatch) {
       // Extract and validate the rate plan
       const detectedPlan = rateScheduleMatch[1];
-      const validatedPlan = validateRatePlan(detectedPlan);
+      const validatedPlan = validateRatePlan(detectedPlan, text);
       
       console.log(`Detected rate plan: '${detectedPlan}', validated as: '${validatedPlan}'`);
       
