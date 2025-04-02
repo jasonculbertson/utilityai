@@ -54,7 +54,7 @@ interface BillData {
   billingInfo?: {
     billingPeriod?: string;
     rateSchedule?: string;
-    totalBillAmount?: number; // Actual total bill amount from PG&E
+    electricDeliveryCharges?: number; // Total PG&E Electric Delivery Charges amount
   };
   energyCharges?: {
     peak?: {
@@ -256,8 +256,8 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
     let yearlySavings = 0;
     let calculationBreakdown = '';
 
-    // Get actual bill amount if available
-    const actualBillAmount = billData.billingInfo?.totalBillAmount;
+    // Get electric delivery charges amount if available
+    const actualBillAmount = billData.billingInfo?.electricDeliveryCharges;
     
     if (currentPlan && bestPlan && currentPlan !== bestPlan) {
       // Calculate savings between rate plans
