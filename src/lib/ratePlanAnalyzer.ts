@@ -156,13 +156,47 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
     
     // Ensure we have a valid rate code
     if (!currentRateCode || !ratePlans[currentRateCode]) {
-      // If the current rate code is not found in our rate plans, default to E-TOU-B
-      if (currentRateCode) {
-        console.warn(`Rate code ${currentRateCode} not found in rate plans, defaulting to E-TOU-B`);
+      // If rate code not found, try to determine from peak hours in rate schedule
+      if (rateSchedule && rateSchedule.toLowerCase().includes('time-of-use')) {
+        const peakHoursMatch = rateSchedule.match(/Peak\s+Pricing\s+(\d+)[-–]\s*(\d+)\s*p\.?m\.?/i);
+        
+        if (peakHoursMatch) {
+          const startHour = parseInt(peakHoursMatch[1]);
+          const endHour = parseInt(peakHoursMatch[2]);
+          console.log(`Detected peak hours in rate schedule: ${startHour}-${endHour} p.m.`);
+          
+          // Match hours to rate plans
+          if (startHour === 4 && endHour === 9) {
+            // Check for EV terms in the rate schedule
+            if (rateSchedule.match(/EV2?A|Electric\s+Vehicle|Home\s+Charging/i)) {
+              console.log('EV terms found in rate schedule, using EV2A');
+              currentRateCode = 'EV2A';
+            } else {
+              console.log('Peak hours 4-9 p.m. indicate E-TOU-C');
+              currentRateCode = 'ETOUC';
+            }
+          } else if (startHour === 5 && endHour === 8) {
+            console.log('Peak hours 5-8 p.m. indicate E-TOU-D');
+            currentRateCode = 'ETOUD';
+          } else {
+            // If we can't match peak hours, default to E-TOU-B
+            console.warn(`Unrecognized peak hours ${startHour}-${endHour}, defaulting to E-TOU-B`);
+            currentRateCode = 'ETOUB';
+          }
+        } else {
+          // Time-of-Use but no peak hours detected, default to E-TOU-B
+          console.warn('Time-of-Use plan without clear peak hours, defaulting to E-TOU-B');
+          currentRateCode = 'ETOUB';
+        }
       } else {
-        console.warn('No rate code found in bill data, defaulting to E-TOU-B');
+        // Not a Time-of-Use plan or couldn't determine, default to E-TOU-B
+        if (currentRateCode) {
+          console.warn(`Rate code ${currentRateCode} not found in rate plans, defaulting to E-TOU-B`);
+        } else {
+          console.warn('No rate code found in bill data, defaulting to E-TOU-B');
+        }
+        currentRateCode = 'ETOUB';
       }
-      currentRateCode = 'ETOUB';
     }
     
     // Calculate costs for each plan
