@@ -1,0 +1,48 @@
+{
+  "currentPlan": "ETOUB",
+  "currentPlanDescription": "Time-of-Use (4-9pm Peak)",
+  "currentCost": 214.22,
+  "bestPlan": "EV2A",
+  "bestPlanDescription": "Time-of-Use (EV Owners)",
+  "bestCost": 175.72,
+  "monthlySavings": 38.5,
+  "yearlySavings": 462,
+  "recommendation": "The EV2A - Time-of-Use (EV Owners) plan is more cost effective primarily because it likely offers more favorable rates for off-peak usage. Given that your electricity usage is significantly higher during off-peak hours than during peak hours, this plan can provide substantial savings. \n\nWith the EV2A plan, you save around $38.5 per month, leading to substantial annual savings of $462. This is calculated by comparing your current monthly cost of $214.22 under the ETOUB plan to the estimated cost of $175.72 under the EV2A plan. \n\nHowever, there are some important considerations to keep in mind while switching plans:\n\n1. Timing of Usage: EV2A is specially designed for EV owners who can schedule their car charging during off-peak hours. Therefore, it's crucial to understand that significant savings come from using electricity during off-peak hours. If your usage pattern changes significantly, the savings may be affected.\n\n2. Terms and Conditions: Be sure to review the Terms and Conditions of the EV2A plan. For example, check if there is a contract period or any fees associated with early termination.\n\n3. Eligibility: Ensure you meet the eligibility criteria for the EV2A plan. As mentioned, this is a plan designed for Electric Vehicle owners. So, you may need to provide proof of EV ownership.\n\nBy carefully reviewing these considerations and continuing to manage your electricity usage wisely, you can effectively reduce your electricity costs with the EV2A plan.\n\nAdditional Recommendations:\n- Switch from ETOUB to EV2A to save approximately $38.50 per month ($462.00 per year).",
+  "allPlans": [
+    {
+      "planCode": "EV2A",
+      "description": "Time-of-Use (EV Owners)",
+      "peakCost": 24.72,
+      "offPeakCost": 151,
+      "totalCost": 175.72
+    },
+    {
+      "planCode": "E-1",
+      "description": "Flat Rate (Tiered Pricing)",
+      "peakCost": 21.89,
+      "offPeakCost": 173.37,
+      "totalCost": 195.26
+    },
+    {
+      "planCode": "ETOUD",
+      "description": "Time-of-Use (3-8pm Peak)",
+      "peakCost": 28.25,
+      "offPeakCost": 178.96,
+      "totalCost": 207.21
+    },
+    {
+      "planCode": "ETOUB",
+      "description": "Time-of-Use (4-9pm Peak)",
+      "peakCost": 29.66,
+      "offPeakCost": 184.56,
+      "totalCost": 214.22
+    },
+    {
+      "planCode": "ETOUC",
+      "description": "Time-of-Use (4-9pm Peak)",
+      "peakCost": 29.66,
+      "offPeakCost": 184.56,
+      "totalCost": 214.22
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "serviceInfo": {
+    "customerName": "JASON CULBERTSON",
+    "serviceAddress": "1080 WARFIELD AVE",
+    "city": "OAKLAND",
+    "state": "CA",
+    "zip": "94610"
+  },
+  "billingInfo": {
+    "billingPeriod": "11/04/2024 - 12/04/2024 (31 billing days)",
+    "rateSchedule": "ETOUB 3 Residential Time-of-Use Service"
+  },
+  "energyCharges": {
+    "peak": {
+      "kWh": 70.616,
+      "rate": 0.44583,
+      "charge": 31.48
+    },
+    "offPeak": {
+      "kWh": 559.264,
+      "rate": 0.40703,
+      "charge": 227.64
+    },
+    "total": 259.12
+  }
+}
