@@ -300,14 +300,20 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
       
       if (actualBillAmount && actualBillAmount > 0) {
         // When current plan is the best plan, the projected bill would be the same as the actual bill
-        const projectedBillAmount = actualBillAmount;
+        // Important: Update the bestPlan cost to match the actual bill amount for frontend display
+        bestPlan.totalCost = actualBillAmount;
+        bestPlan.peakCost = currentPlan.peakCost;
+        bestPlan.offPeakCost = currentPlan.offPeakCost;
+        
         calculationBreakdown = `Your actual bill: $${actualBillAmount.toFixed(2)}
 ` +
                                `You are already on the best rate plan (${currentPlan.planCode}).
 ` +
-                               `Your projected bill: $${projectedBillAmount.toFixed(2)}
+                               `Your projected bill: $${actualBillAmount.toFixed(2)}
 ` +
                                `No savings available as you're already on the optimal plan.`;
+        
+        console.log(`Setting bestPlan cost to match actual bill amount ($${actualBillAmount.toFixed(2)})`);
       } else {
         calculationBreakdown = 'Your current plan is already the best plan. No savings available.';
       }
