@@ -221,20 +221,75 @@ export default function ResultsPage() {
                 </p>
                 
                 {analysis.calculationBreakdown && (
-                  <button 
-                    className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
-                    onClick={() => {
-                      // Use browser's alert for simplicity, but could be replaced with a modal
-                      alert(`Calculation Breakdown:
-
-${analysis.calculationBreakdown}`);
-                    }}
-                  >
-                    View Calculation Breakdown
-                  </button>
+                  <div className="mt-4 p-3 bg-gray-100 rounded-lg text-left">
+                    <h4 className="font-bold mb-2">Calculation Breakdown:</h4>
+                    <pre className="whitespace-pre-wrap text-sm p-2 bg-white rounded border border-gray-200">
+                      {analysis.calculationBreakdown}
+                    </pre>
+                  </div>
                 )}
               </div>
             )}
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-3">Detailed Rate Plan Comparison</h3>
+          
+          {/* Rate Plan Comparison Table */}
+          <div className="mb-6 overflow-x-auto">
+            <table className="min-w-full bg-white mb-4">
+              <thead>
+                <tr className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                  <th className="py-3 px-6 text-left">Feature</th>
+                  <th className="py-3 px-6 text-center">{analysis.currentPlan} (Current)</th>
+                  <th className="py-3 px-6 text-center">{analysis.recommendedPlan} (Recommended)</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-600 text-sm">
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-6 text-left font-medium">Peak Hours</td>
+                  <td className="py-3 px-6 text-center">
+                    {analysis.currentPlan.includes('EV2A') || analysis.currentPlan.includes('E-TOU-C') ? '4-9 PM' : 
+                     analysis.currentPlan.includes('E-TOU-D') ? '5-8 PM' : 'N/A'}
+                  </td>
+                  <td className="py-3 px-6 text-center">
+                    {analysis.recommendedPlan.includes('EV2A') || analysis.recommendedPlan.includes('E-TOU-C') ? '4-9 PM' : 
+                     analysis.recommendedPlan.includes('E-TOU-D') ? '5-8 PM' : 'N/A'}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-6 text-left font-medium">Peak Rate</td>
+                  <td className="py-3 px-6 text-center">{formatRate(energyCharges.peak.rate)}</td>
+                  <td className="py-3 px-6 text-center">
+                    {analysis.recommendedPlan.includes('EV2A') ? '$0.35/kWh (Winter) / $0.47/kWh (Summer)' : 
+                     analysis.recommendedPlan.includes('E-TOU-C') ? '$0.42/kWh (Winter) / $0.54/kWh (Summer)' : 
+                     analysis.recommendedPlan.includes('E-TOU-D') ? '$0.40/kWh (Winter) / $0.50/kWh (Summer)' : 
+                     '$0.31/kWh'}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="py-3 px-6 text-left font-medium">Off-Peak Rate</td>
+                  <td className="py-3 px-6 text-center">{formatRate(energyCharges.offPeak.rate)}</td>
+                  <td className="py-3 px-6 text-center">
+                    {analysis.recommendedPlan.includes('EV2A') ? '$0.27/kWh (Winter) / $0.29/kWh (Summer)' : 
+                     analysis.recommendedPlan.includes('E-TOU-C') ? '$0.33/kWh (Winter) / $0.36/kWh (Summer)' : 
+                     analysis.recommendedPlan.includes('E-TOU-D') ? '$0.32/kWh (Winter) / $0.35/kWh (Summer)' : 
+                     '$0.31/kWh'}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200 font-medium">
+                  <td className="py-3 px-6 text-left">Projected Monthly Cost</td>
+                  <td className="py-3 px-6 text-center">{formatCurrency(analysis.currentPlanEstimatedCost)}</td>
+                  <td className="py-3 px-6 text-center text-green-600">{formatCurrency(analysis.recommendedPlanEstimatedCost)}</td>
+                </tr>
+                {Number(analysis.potentialMonthlySavings) > 0 && (
+                  <tr className="border-b border-gray-200 font-medium bg-green-50">
+                    <td className="py-3 px-6 text-left">Potential Monthly Savings</td>
+                    <td className="py-3 px-6 text-center">-</td>
+                    <td className="py-3 px-6 text-center text-green-600">{formatCurrency(analysis.potentialMonthlySavings)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
           
           <h3 className="text-lg font-semibold mb-3">Cost Comparison by Rate Plan</h3>
