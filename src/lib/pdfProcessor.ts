@@ -184,9 +184,10 @@ export async function processPdfWithOCR(pdfPath: string, apiKey: string): Promis
     let allText = '';
     let failedPages = 0;
     
-    // Only process pages 1 and 3 (which are indices 0 and 2)
-    const pagesToProcess = [0, 2];
-    console.log(`Only processing pages 1 and 3 of the bill for efficiency...`);
+    // Process pages 1, 3, and 4 (which are indices 0, 2, and 3)
+    // Page 1 has account info, page 3 has usage details, and page 4 sometimes has rate plan details
+    const pagesToProcess = [0, 2, 3];
+    console.log(`Processing pages 1, 3, and 4 of the bill for important billing info...`);
     
     // Process only selected pages with OCR
     for (const pageIndex of pagesToProcess) {
