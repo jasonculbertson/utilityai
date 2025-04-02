@@ -68,12 +68,31 @@ export default function ManualEntryPage() {
         }
       };
 
-      const response = await fetch('/api/manual', {
+      // Structure the data in the format expected by the manual-entry API endpoint
+      const apiData = {
+        customerName: formData.customerName,
+        serviceAddress: formData.serviceAddress,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        billingStart: formData.billingPeriodStart,
+        billingEnd: formData.billingPeriodEnd,
+        ratePlan: formData.rateSchedule,
+        peakUsage: formData.peakKwh,
+        peakRate: formData.peakRate,
+        offPeakUsage: formData.offPeakKwh,
+        offPeakRate: formData.offPeakRate,
+        amountDue: formData.totalCharges
+      };
+      
+      console.log('Sending manual entry data:', apiData);
+      
+      const response = await fetch('/api/manual-entry', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formattedData),
+        body: JSON.stringify(apiData),
       });
 
       const result = await response.json();

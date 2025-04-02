@@ -18,6 +18,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Handle customer information if provided
+    const customerName = data.customerName || 'Manual Entry';
+    const serviceAddress = data.serviceAddress || '';
+    const city = data.city || '';
+    const state = data.state || 'CA';
+    const zip = data.zip || '';
+    
     // Format the billing period
     const startDate = new Date(data.billingStart);
     const endDate = new Date(data.billingEnd);
@@ -50,7 +57,11 @@ export async function POST(request: NextRequest) {
     // Prepare the response data
     const responseData = {
       serviceInfo: {
-        // Manual entries don't have customer info
+        customerName: customerName,
+        serviceAddress: serviceAddress,
+        city: city,
+        state: state,
+        zip: zip
       },
       billingInfo: {
         billingPeriod,
@@ -100,11 +111,12 @@ export async function POST(request: NextRequest) {
 function analyzeRatePlan(currentRateCode: string, peakKwh: number, offPeakKwh: number) {
   // Rate plans and their pricing
   const ratePlans = {
-    'E-1': { peak: 0.31, offPeak: 0.31 }, // Flat rate
-    'E-TOU-B': { peak: 0.42, offPeak: 0.33 }, // Winter rates
-    'E-TOU-C': { peak: 0.42, offPeak: 0.33 }, // Winter rates
-    'E-TOU-D': { peak: 0.40, offPeak: 0.32 }, // Winter rates
-    'EV2-A': { peak: 0.35, offPeak: 0.27 }  // Winter rates
+    'E-1': { peak: 0.37, offPeak: 0.37, description: 'Flat Rate' }, // Flat rate
+    'E-TOU-B': { peak: 0.42, offPeak: 0.33, description: 'Time-of-Use (4-9pm Peak)' }, // Winter rates
+    'E-TOU-C': { peak: 0.42, offPeak: 0.33, description: 'Time-of-Use (4-9pm Peak)' }, // Winter rates
+    'E-TOU-D': { peak: 0.40, offPeak: 0.32, description: 'Time-of-Use (5-8pm Peak)' }, // Winter rates
+    'EV2A': { peak: 0.35, offPeak: 0.27, description: 'Time-of-Use (EV Owners)' },  // Winter rates
+    'EV2-A': { peak: 0.35, offPeak: 0.27, description: 'Time-of-Use (EV Owners)' }  // Winter rates
   };
   
   // Ensure the rate code is one we recognize
@@ -149,13 +161,30 @@ function analyzeRatePlan(currentRateCode: string, peakKwh: number, offPeakKwh: n
   const currentPlanCost = costByPlan[currentRateCode];
   const potentialSavings = currentPlanCost - lowestCost;
   
+  // Get descriptions for the plans
+  const currentPlanDescription = (ratePlans[currentRateCode as keyof typeof ratePlans] as any)?.description || 'Time-of-Use';
+  const bestPlanDescription = (ratePlans[cheapestPlan as keyof typeof ratePlans] as any)?.description || 'Time-of-Use';
+  
   return {
     currentPlan: currentRateCode,
+    currentPlanDescription: currentPlanDescription,
     currentPlanEstimatedCost: currentPlanCost.toFixed(2),
     recommendedPlan: cheapestPlan,
+    bestPlanDescription: bestPlanDescription,
     recommendedPlanEstimatedCost: lowestCost.toFixed(2),
     potentialMonthlySavings: potentialSavings > 0 ? potentialSavings.toFixed(2) : '0.00',
     plans: Object.values(planDetails),
-    bestPlan: cheapestPlan
+    bestPlan: cheapestPlan,
+    currentCost: currentPlanCost.toFixed(2),
+    bestCost: lowestCost.toFixed(2),
+    monthlySavings: potentialSavings > 0 ? potentialSavings.toFixed(2) : '0.00',
+    yearlySavings: potentialSavings > 0 ? (potentialSavings * 12).toFixed(2) : '0.00',
+    allPlans: Object.entries(planDetails).map(([code, details]) => ({
+      planCode: code,
+      description: (ratePlans[code as keyof typeof ratePlans] as any)?.description || 'Time-of-Use',
+      peakCost: parseFloat(details.peakCost),
+      offPeakCost: parseFloat(details.offPeakCost),
+      totalCost: parseFloat(details.monthlyCost)
+    }))
   };
 }

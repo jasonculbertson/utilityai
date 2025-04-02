@@ -23,8 +23,11 @@ function extractWithRegex(text: string) {
 
   // Service Information Patterns
   const customerNameRegex = /Service\s+For:?\s*\n?([A-Z][A-Z\s]+)/i;
-  const serviceAddressRegex = /(\d+\s+[A-Z][A-Z\s]+\s+AVE)/i;
+  const serviceAddressRegex = /(\d+\s+[A-Z][A-Z\s]+\s+(?:AVE|ST|BLVD|DR|RD|LN|WAY|PKWY|CT|CIR|PL|TRL|TERR|PLAZA|DRIVE|STREET|AVENUE|ROAD|LANE|BOULEVARD)(?:\s|\.|$))/i;
   const cityStateZipRegex = /([A-Z]+),\s*([A-Z]{2})\s*(\d{5})/i;
+  
+  // New comprehensive Service For pattern - handles the entire service address block
+  const serviceForBlockRegex = /Service\s+For:(?:\s|\n)+([A-Z][A-Z\s]+)(?:\s|\n)+(\d+\s+[A-Z][A-Z\s]+(?:\s|\n)+(?:RD|ST|AVE|BLVD|LN|DR|WAY|PL|CT|TER))(?:\s|\n)+([A-Z][A-Z\s]+)(?:\s|\n|,)+([A-Z]{2})\s+(\d{5})/i;
 
   // Billing Information Patterns
   // More flexible billing period regex that can handle various formats
@@ -42,21 +45,54 @@ function extractWithRegex(text: string) {
   const totalChargesRegex = /Total\s+(?:PG&E|PG[&8]E|PGBE)\s+(?:Electric|Electr[il]c)\s+(?:Delivery|Del[il]very)\s+(?:Charges|Charg[e3]s)\s*(?:\$|\s|s)?(\d+(?:[.,]\d{1,2}))/i;
 
   // Extract Service Information
-  const customerNameMatch = customerNameRegex.exec(text);
-  if (customerNameMatch) {
-    result.serviceInfo.customerName = customerNameMatch[1].trim();
-  }
+  // Try to find the Service For block first
+  const serviceForLines = text.match(/Service For:([\s\S]*?)(?:\n\n|\n[^\s]|$)/i);
+  
+  if (serviceForLines && serviceForLines[1]) {
+    // Split the service for section into lines
+    const lines = serviceForLines[1].split('\n')
+      .map(line => line.trim())
+      .filter(line => line);
+    
+    console.log('Found Service For section with lines:', lines);
+    
+    if (lines.length >= 1) {
+      // First line is usually the customer name
+      result.serviceInfo.customerName = lines[0];
+      
+      // Second line is usually the street address
+      if (lines.length >= 2) {
+        result.serviceInfo.serviceAddress = lines[1];
+      }
+      
+      // Third line is usually city, state, zip
+      if (lines.length >= 3) {
+        const cityStateZipParts = lines[2].match(/([^,]+),?\s*([A-Z]{2})\s*(\d{5})/i);
+        if (cityStateZipParts) {
+          result.serviceInfo.city = cityStateZipParts[1].trim();
+          result.serviceInfo.state = cityStateZipParts[2];
+          result.serviceInfo.zip = cityStateZipParts[3];
+        }
+      }
+    }
+  } else {
+    // Fallback to individual patterns
+    const customerNameMatch = customerNameRegex.exec(text);
+    if (customerNameMatch) {
+      result.serviceInfo.customerName = customerNameMatch[1].trim();
+    }
 
-  const serviceAddressMatch = serviceAddressRegex.exec(text);
-  if (serviceAddressMatch) {
-    result.serviceInfo.serviceAddress = serviceAddressMatch[1].trim();
-  }
+    const serviceAddressMatch = serviceAddressRegex.exec(text);
+    if (serviceAddressMatch) {
+      result.serviceInfo.serviceAddress = serviceAddressMatch[1].trim();
+    }
 
-  const cityStateZipMatch = cityStateZipRegex.exec(text);
-  if (cityStateZipMatch) {
-    result.serviceInfo.city = cityStateZipMatch[1].trim();
-    result.serviceInfo.state = cityStateZipMatch[2].trim();
-    result.serviceInfo.zip = cityStateZipMatch[3].trim();
+    const cityStateZipMatch = cityStateZipRegex.exec(text);
+    if (cityStateZipMatch) {
+      result.serviceInfo.city = cityStateZipMatch[1].trim();
+      result.serviceInfo.state = cityStateZipMatch[2].trim();
+      result.serviceInfo.zip = cityStateZipMatch[3].trim();
+    }
   }
 
   // Extract Billing Information

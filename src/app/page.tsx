@@ -641,82 +641,64 @@ export default function Home() {
                 <p className="text-gray mb-4">Upload a bill or enter details manually to analyze potential savings</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="p-3 text-left text-sm font-medium text-gray">Customer</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Billing Period</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Current Rate</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Amount Due</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Suggested Rate</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Projected Amount</th>
-                      <th className="p-3 text-left text-sm font-medium text-gray">Savings</th>
-                      <th className="p-3 text-center text-sm font-medium text-gray">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {processedBills.map((bill, index) => {
-                      const data = bill.data || {};
-                      const isManualEntry = !data.customerName;
-                      
-                      return (
-                        <tr key={index} className="border-b border-border hover:bg-hover transition-colors">
-                          <td className="p-3">
-                            <div className="flex items-center">
-                              {isManualEntry ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                              )}
-                              <span>{isManualEntry ? 'Manual Entry' : data.customerName || 'N/A'}</span>
-                            </div>
-                          </td>
-                          <td className="p-3">{data.billingPeriod || 'N/A'}</td>
-                          <td className="p-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              {data.ratePlan || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="p-3 font-medium">${data.amountDue || 'N/A'}</td>
-                          <td className="p-3">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {data.suggestedRatePlan || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="p-3 font-medium">{data.projectedAmount ? `$${data.projectedAmount}` : 'N/A'}</td>
-                          <td className="p-3">
-                            {data.monthlySavings ? (
-                              <div>
-                                <div className="text-success font-medium">${data.monthlySavings}/mo</div>
-                                <div className="text-xs text-gray">${data.yearlySavings}/yr</div>
+              <div className="max-w-2xl mx-auto">
+                {processedBills.map((bill, index) => {
+                  const data = bill.data || {};
+                  const hasSavings = data.monthlySavings && parseFloat(data.monthlySavings) > 0;
+                  
+                  return (
+                    <div key={index} className="mb-6">
+                      {/* Summary Card */}
+                      <div className="rounded-lg shadow-md overflow-hidden">
+                        <div className={`p-6 ${hasSavings ? 'bg-green-50' : 'bg-blue-50'}`}>
+                          <h3 className="text-center text-xl font-semibold mb-2">Plan Status:</h3>
+                          
+                          {hasSavings ? (
+                            <>
+                              <div className="text-center text-2xl font-bold text-green-700 mb-2">
+                                Save ${data.yearlySavings}/year
                               </div>
-                            ) : 'N/A'}
-                          </td>
-                          <td className="p-3 text-center">
+
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-center text-2xl font-bold text-blue-700 mb-2">
+                                You're already on the optimal plan
+                              </div>
+                              <p className="text-center text-blue-600">
+                                No additional savings available
+                              </p>
+                            </>
+                          )}
+                          
+                          <div className="mt-6 text-center">
                             <button
                               onClick={() => {
                                 // Make sure the data is in the format expected by the results page
                                 const formattedData = bill.data; // This is already in the correct format
+                                
+                                // Ensure energy charges data is properly structured and non-zero
+                                console.log('Bill data before storing:', formattedData);
+                                console.log('Energy charges data:', formattedData.energyCharges);
+                                
                                 // Store properly formatted bill data in localStorage
                                 localStorage.setItem('billResult', JSON.stringify(formattedData));
-                                // Navigate to the detailed results page
-                                router.push('/results');
+                                // Navigate to the detailed results page using window.location
+                                // for more reliable navigation between pages
+                                window.location.href = '/results';
                               }}
-                              className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
-                              View Details
+                              View Detailed Breakdown
                             </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+                      </div>
+                      
+
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
