@@ -234,8 +234,8 @@ export async function extractBillInfo(text: string) {
                - OCR might add spaces in dates like "1 2/1 1/2024" which should be "12/11/2024"
 
             3. Electric Delivery Charges:
-               - PAGE 3: Look for "Total PG&E Electric Delivery Charges" section (around $201.18)
-               - This amount is on PAGE 3 and is different from the total bill amount
+               - Look for "Total PG&E Electric Delivery Charges" section on PAGE 1 (a specific dollar amount)
+               - This amount is different from the total bill amount
                - Peak usage typically ranges from 70-180 kWh (e.g., 173.812 kWh)
                - Peak rate is typically between $0.44-$0.50/kWh (e.g., $0.49378/kWh)
                - Peak charge ranges from $30-$90 (e.g., $85.82)
@@ -459,8 +459,8 @@ export async function extractBillInfo(text: string) {
                - Find the "Total PG&E Electric Delivery Charges" amount (around $201.18), which is different from the "Total amount due" (which may include gas charges)
 
             3. Electric Delivery Charges:
-               - PAGE 3: Look for "Total PG&E Electric Delivery Charges" section (around $201.18)
-               - This amount is on PAGE 3 and is different from the total bill amount
+               - Look for "Total PG&E Electric Delivery Charges" section on PAGE 1 (a specific dollar amount)
+               - This amount is different from the total bill amount
                - Peak usage typically ranges from 70-180 kWh (e.g., 173.812 kWh)
                - Peak rate is typically between $0.44-$0.50/kWh (e.g., $0.49378/kWh)
                - Peak charge ranges from $30-$90 (e.g., $85.82)

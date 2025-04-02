@@ -297,7 +297,20 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
       }
     } else if (currentPlan && bestPlan && currentPlan === bestPlan) {
       console.log('Current plan is already the best plan, no savings available');
-      calculationBreakdown = 'Your current plan is already the best plan. No savings available.';
+      
+      if (actualBillAmount && actualBillAmount > 0) {
+        // When current plan is the best plan, the projected bill would be the same as the actual bill
+        const projectedBillAmount = actualBillAmount;
+        calculationBreakdown = `Your actual bill: $${actualBillAmount.toFixed(2)}
+` +
+                               `You are already on the best rate plan (${currentPlan.planCode}).
+` +
+                               `Your projected bill: $${projectedBillAmount.toFixed(2)}
+` +
+                               `No savings available as you're already on the optimal plan.`;
+      } else {
+        calculationBreakdown = 'Your current plan is already the best plan. No savings available.';
+      }
     }
     
     return {
