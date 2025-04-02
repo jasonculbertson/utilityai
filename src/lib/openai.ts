@@ -28,6 +28,8 @@ function extractWithRegex(text: string) {
   // More flexible billing period regex that can handle various formats
   const billingPeriodRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*\((\d+)\s*billing\s*days\)/i;
   // Enhanced rate schedule regex to handle various OCR misreadings and formats
+  // Special handling for EV2A which is often misread
+  const ev2aSpecificRegex = /Rate\s+Schedule:?\s*(EV2A)\s+(?:Home\s+Charging|[^\n]+)/i;
   const rateScheduleRegex = /(?:Rate\s+(?:Schedule|Plan)|SERVICE\s+DETAILS[^]*?Rate[^]*?:)[^]*?([A-Z][A-Z0-9]?[A-Z0-9]?[A-Z0-9]?[A-Z0-9]?)\s+([^\n]+)/i;
   const etouRateRegex = /(?:E-?TOU-?|ETOU)[^]*?([BCD])\b/i;
 
@@ -137,8 +139,7 @@ function extractWithRegex(text: string) {
   }
 
   // First, look explicitly for EV2A pattern since it's commonly misread
-  const ev2aRegex = /Rate\s+Schedule:?\s*EV2A\s+Home\s+Charging/i;
-  const ev2aMatch = ev2aRegex.exec(text);
+  const ev2aMatch = ev2aSpecificRegex.exec(text);
   
   if (ev2aMatch) {
     // If we specifically find EV2A, use it directly
