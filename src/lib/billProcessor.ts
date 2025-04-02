@@ -36,6 +36,47 @@ export async function processBill(filePath: string) {
     // No need for specific replacements here
     console.log('Using validated rate plan:', billInfo.billingInfo?.rateSchedule);
     
+    // CRITICAL FIX: Extract service info directly from OCR if needed
+    if (!billInfo.serviceInfo || Object.keys(billInfo.serviceInfo).length === 0) {
+      console.log('Service info missing or empty, extracting directly from OCR text...');
+      billInfo.serviceInfo = {};
+      
+      const serviceForBlock = extractedText.match(/Service For:\s*([\s\S]*?)(?:\n\n|\n[^\s]|$)/i);
+      if (serviceForBlock && serviceForBlock[1]) {
+        const lines = serviceForBlock[1].split('\n')
+          .map(line => line.trim())
+          .filter(line => line);
+        
+        console.log('Service For block lines:', lines);
+        
+        // First line is customer name
+        if (lines.length >= 1) {
+          billInfo.serviceInfo.customerName = lines[0];
+          console.log('Set customer name:', billInfo.serviceInfo.customerName);
+        }
+        
+        // Second line is service address
+        if (lines.length >= 2) {
+          billInfo.serviceInfo.serviceAddress = lines[1];
+          console.log('Set service address:', billInfo.serviceInfo.serviceAddress);
+        }
+        
+        // Third line is city, state, zip
+        if (lines.length >= 3) {
+          const cityStateZipParts = lines[2].match(/([^,]+),?\s*([A-Z]{2})\s*(\d{5})/i);
+          if (cityStateZipParts) {
+            billInfo.serviceInfo.city = cityStateZipParts[1].trim();
+            billInfo.serviceInfo.state = cityStateZipParts[2];
+            billInfo.serviceInfo.zip = cityStateZipParts[3];
+            console.log('Set city, state, zip:', 
+              billInfo.serviceInfo.city, 
+              billInfo.serviceInfo.state, 
+              billInfo.serviceInfo.zip);
+          }
+        }
+      }
+    }
+    
     // Ensure service information is properly formatted based on user requirements
     if (billInfo.serviceInfo) {
       console.log('Formatting service information...');
