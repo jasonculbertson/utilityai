@@ -13,9 +13,14 @@ async function testBillProcessing() {
     
     // Log the detection results
     console.log('\nBill Processing Results:');
-    console.log('Rate Plan:', result.billingInfo?.rateSchedule);
-    console.log('Billing Period:', result.billingInfo?.billingPeriod);
-    console.log('Customer:', result.serviceInfo?.customerName);
+    // Safely access properties with type checking
+    if ('data' in result && result.success) {
+      console.log('Rate Plan:', result.data?.billingInfo?.rateSchedule);
+      console.log('Billing Period:', result.data?.billingInfo?.billingPeriod);
+      console.log('Customer:', result.data?.serviceInfo?.customerName);
+    } else {
+      console.log('Error:', result.error || 'Unknown error');
+    }
     
     // Log full result for detailed inspection
     console.log('\nFull Result:', JSON.stringify(result, null, 2));
