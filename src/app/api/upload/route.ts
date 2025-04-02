@@ -30,7 +30,7 @@ function saveFileMapping(fileId: string, filePath: string): void {
 }
 
 // Function to get a file mapping from disk
-export function getFileMapping(fileId: string): string | null {
+function getFileMapping(fileId: string): string | null {
   const mappingPath = path.join(mappingsDir, `${fileId}.json`);
   
   if (!fs.existsSync(mappingPath)) {
@@ -53,7 +53,7 @@ export function getFileMapping(fileId: string): string | null {
 }
 
 // Function to delete a file mapping
-export function deleteFileMapping(fileId: string): void {
+function deleteFileMapping(fileId: string): void {
   const mappingPath = path.join(mappingsDir, `${fileId}.json`);
   if (fs.existsSync(mappingPath)) {
     fs.unlinkSync(mappingPath);
