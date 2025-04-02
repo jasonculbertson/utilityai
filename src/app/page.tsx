@@ -14,25 +14,20 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('upload-tab');
   const [processedBills, setProcessedBills] = useState<any[]>([]);
   const [showProcessedBills, setShowProcessedBills] = useState(false);
-  const [isStaticDeployment, setIsStaticDeployment] = useState(false);
   const router = useRouter();
   
-  // Check if this is a static deployment (GitHub Pages)
+  // Load any previously processed bills
   useEffect(() => {
-    // Check if API keys are missing or if we're on GitHub Pages domain
-    const isStatic = typeof window !== 'undefined' && (
-      !process.env.OPENAI_API_KEY || 
-      !process.env.OCR_SPACE_API_KEY ||
-      window.location.hostname.includes('github.io')
-    );
-    
-    if (isStatic) {
-      // Redirect to static info page
-      router.push('/static-info');
+    // Load any previously processed bills from localStorage if available
+    try {
+      const savedBills = localStorage.getItem('processedBills');
+      if (savedBills) {
+        setProcessedBills(JSON.parse(savedBills));
+      }
+    } catch (error) {
+      console.error('Error loading processed bills:', error);
     }
-    
-    setIsStaticDeployment(isStatic);
-  }, [router]);
+  }, []);
 
   // Form state for manual entry
   const [manualFormData, setManualFormData] = useState({
