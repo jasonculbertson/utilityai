@@ -50,7 +50,41 @@ export default function ResultsPage() {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
-        setBillData(parsedData);
+        console.log('Parsed bill data:', parsedData);
+        
+        // Ensure the data has the required structure, providing fallbacks for missing properties
+        const formattedData = {
+          serviceInfo: {
+            customerName: parsedData?.serviceInfo?.customerName || parsedData?.customerName || 'N/A',
+            serviceAddress: parsedData?.serviceInfo?.serviceAddress || parsedData?.serviceAddress || 'N/A',
+            city: parsedData?.serviceInfo?.city || 'N/A',
+            state: parsedData?.serviceInfo?.state || 'N/A',
+            zip: parsedData?.serviceInfo?.zip || 'N/A'
+          },
+          billingInfo: {
+            billingPeriod: parsedData?.billingInfo?.billingPeriod || parsedData?.billingPeriod || 'N/A',
+            rateSchedule: parsedData?.billingInfo?.rateSchedule || parsedData?.ratePlan || 'N/A',
+            totalBillAmount: parsedData?.billingInfo?.totalBillAmount || parsedData?.amountDue || 0
+          },
+          energyCharges: {
+            peak: parsedData?.energyCharges?.peak || { kWh: 0, rate: 0, charge: 0 },
+            offPeak: parsedData?.energyCharges?.offPeak || { kWh: 0, rate: 0, charge: 0 },
+            total: parsedData?.energyCharges?.total || 0
+          },
+          analysis: {
+            currentPlan: parsedData?.analysis?.currentPlan || parsedData?.ratePlan || 'N/A',
+            currentPlanEstimatedCost: parsedData?.analysis?.currentPlanEstimatedCost || String(parsedData?.amountDue || '0'),
+            recommendedPlan: parsedData?.analysis?.recommendedPlan || parsedData?.suggestedRatePlan || 'N/A',
+            recommendedPlanEstimatedCost: parsedData?.analysis?.recommendedPlanEstimatedCost || String(parsedData?.projectedAmount || '0'),
+            potentialMonthlySavings: parsedData?.analysis?.potentialMonthlySavings || String(parsedData?.monthlySavings || '0'),
+            costByPlan: parsedData?.analysis?.costByPlan || [],
+            calculationBreakdown: parsedData?.analysis?.calculationBreakdown || '',
+            actualBillAmount: parsedData?.analysis?.actualBillAmount || parsedData?.amountDue || 0
+          }
+        };
+        
+        console.log('Formatted bill data:', formattedData);
+        setBillData(formattedData);
       } catch (error) {
         console.error('Error parsing bill data:', error);
       }
