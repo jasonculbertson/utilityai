@@ -62,8 +62,8 @@ function extractWithRegex(text: string) {
 
   // Define the valid PG&E rate plans
   const VALID_RATE_PLANS = [
-    "E-1", "E-TOU-C", "E-TOU-D", "EV-A", "EV-B", "EV2-A", 
-    "B-1", "B-6", "B-10", "B-19", "B-20", "BEV1", "BEV2"
+    "E-1", "E-TOU-C", "E-TOU-D", "EV-A", "EV-B", "EV2-A", "EV2A", 
+    "B-1", "B-6", "B-10", "B-19", "B-20", "BEV1", "BEV2", "ETOUB"
   ];
 
   // Function to validate and correct rate plans
@@ -87,15 +87,15 @@ function extractWithRegex(text: string) {
       }
     }
     
-    // Handle common OCR errors
-    if (normalizedPlan === "ETOUB") return "E-TOU-C"; // Fix B/C confusion
+    // Preserve specific rate plans
+    if (normalizedPlan === "ETOUB") return "ETOUB"; // Keep ETOUB as-is
     if (normalizedPlan === "ETOU8") return "E-TOU-B"; // Fix 8/B confusion
     if (normalizedPlan === "ET0UC") return "E-TOU-C"; // Fix 0/O confusion
     if (normalizedPlan === "ET0UD") return "E-TOU-D"; // Fix 0/O confusion
     if (normalizedPlan === "ETOUC") return "E-TOU-C"; // Add proper formatting
     if (normalizedPlan === "ETOUD") return "E-TOU-D"; // Add proper formatting
     if (normalizedPlan === "El") return "E-1"; // Fix l/1 confusion
-    if (normalizedPlan === "EV2A") return "EV2-A"; // Handle EV2A format (without hyphen)
+    if (normalizedPlan === "EV2A") return "EV2A"; // Keep EV2A as-is without hyphen
     
     // Check for ETOU rate plans using additional regex
     const etouMatch = etouRateRegex.exec(normalizedPlan);
