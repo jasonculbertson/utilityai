@@ -700,8 +700,10 @@ export default function Home() {
                           <td className="p-3 text-center">
                             <button
                               onClick={() => {
-                                // Store this bill data in localStorage
-                                localStorage.setItem('billResult', JSON.stringify(bill));
+                                // Make sure the data is in the format expected by the results page
+                                const formattedData = bill.data; // This is already in the correct format
+                                // Store properly formatted bill data in localStorage
+                                localStorage.setItem('billResult', JSON.stringify(formattedData));
                                 // Navigate to the detailed results page
                                 router.push('/results');
                               }}
