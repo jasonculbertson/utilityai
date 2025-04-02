@@ -226,7 +226,19 @@ export async function processPdfWithOCR(pdfPath: string, apiKey: string): Promis
       console.log('OCR processing complete successfully for all pages');
     }
     
-    return allText;
+    // Add debug information to the OCR text
+    const totalPages = pageFilePaths.length;
+    const debugInfo = `
+=== OCR DEBUG INFO ===
+Processed PDF: ${pdfPath}
+Pages processed: ${pagesToProcess.join(', ')}
+Total pages in PDF: ${totalPages}
+Extracted text length: ${allText.length} characters
+
+`;
+    const textWithDebugInfo = debugInfo + allText;
+    
+    return textWithDebugInfo;
   } finally {
     // Clean up temporary files
     try {
