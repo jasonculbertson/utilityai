@@ -73,7 +73,14 @@ function extractWithRegex(text: string) {
     // Normalize the detected plan (remove spaces, make uppercase)
     const normalizedPlan = detectedPlan.replace(/\s+/g, "").toUpperCase();
     
-    // Check exact matches
+    // First check if the plan is already in our valid list (case insensitive)
+    for (const plan of VALID_RATE_PLANS) {
+      if (plan.toUpperCase() === detectedPlan.toUpperCase()) {
+        return plan; // Return the correctly formatted version from our list
+      }
+    }
+    
+    // Then check normalized versions (with spaces and hyphens removed)
     for (const plan of VALID_RATE_PLANS) {
       if (plan.replace(/\s+|-/g, "").toUpperCase() === normalizedPlan) {
         return plan;
