@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
-import { getFileMapping, deleteFileMapping } from '../upload/route';
+import { getFileMapping, deleteFileMapping } from '@/lib/fileUtils';
 import { createProcessingJob } from '@/lib/processingQueue';
 
 export async function POST(request: NextRequest) {
