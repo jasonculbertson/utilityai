@@ -64,16 +64,18 @@ export default function ResultsPage() {
       try {
         const parsedData = JSON.parse(storedData);
         console.log('Parsed bill data:', parsedData);
+        console.log('Service info from localStorage:', parsedData?.serviceInfo);
         console.log('Energy charges from localStorage:', parsedData?.energyCharges);
         
         // Ensure the data has the required structure, providing fallbacks for missing properties
         const formattedData = {
           serviceInfo: {
             customerName: parsedData?.serviceInfo?.customerName || parsedData?.customerName || 'N/A',
-            serviceAddress: parsedData?.serviceInfo?.serviceAddress || parsedData?.address || parsedData?.serviceAddress || parsedData?.extractedText?.match(/Service For:.*?([0-9]+\s+[A-Za-z\s]+(?:RD|ST|AVE|BLVD|LN|DR|WAY|PL|CT|TER))\s*([A-Za-z\s]+),?\s*([A-Z]{2})\s*([0-9]{5})/i)?.[1] || 'N/A',
-            city: parsedData?.serviceInfo?.city || parsedData?.city || parsedData?.extractedText?.match(/Service For:.*?[0-9]+\s+[A-Za-z\s]+(?:RD|ST|AVE|BLVD|LN|DR|WAY|PL|CT|TER)\s*([A-Za-z\s]+),?\s*[A-Z]{2}\s*[0-9]{5}/i)?.[1]?.trim() || 'N/A',
-            state: parsedData?.serviceInfo?.state || parsedData?.state || parsedData?.extractedText?.match(/Service For:.*?[0-9]+\s+[A-Za-z\s]+(?:RD|ST|AVE|BLVD|LN|DR|WAY|PL|CT|TER)\s*[A-Za-z\s]+,?\s*([A-Z]{2})\s*[0-9]{5}/i)?.[1] || 'CA',
-            zip: parsedData?.serviceInfo?.zip || parsedData?.zip || parsedData?.extractedText?.match(/Service For:.*?[0-9]+\s+[A-Za-z\s]+(?:RD|ST|AVE|BLVD|LN|DR|WAY|PL|CT|TER)\s*[A-Za-z\s]+,?\s*[A-Z]{2}\s*([0-9]{5})/i)?.[1] || 'N/A'
+            // Simplify service address extraction to prioritize the address from serviceInfo
+            serviceAddress: parsedData?.serviceInfo?.serviceAddress || parsedData?.address || parsedData?.serviceAddress || 'N/A',
+            city: parsedData?.serviceInfo?.city || parsedData?.city || 'N/A',
+            state: parsedData?.serviceInfo?.state || parsedData?.state || 'CA',
+            zip: parsedData?.serviceInfo?.zip || parsedData?.zip || 'N/A'
           },
           billingInfo: {
             billingPeriod: parsedData?.billingInfo?.billingPeriod || parsedData?.billingPeriod || 'N/A',
