@@ -397,7 +397,7 @@ export async function extractBillInfo(text: string) {
         const description = descriptionMatch ? descriptionMatch[1] : 'Time of Use';
         
         // Always use ETOUB as the rate code
-        mergedResults.billingInfo.rateSchedule = `ETOUB ${description}`;
+        //mergedResults.billingInfo.rateSchedule = `ETOUB ${description}`;
         
         if (originalRateSchedule !== mergedResults.billingInfo.rateSchedule) {
           console.log('Corrected rate schedule from', originalRateSchedule, 'to', mergedResults.billingInfo.rateSchedule);
@@ -583,7 +583,7 @@ export async function extractBillInfo(text: string) {
         const description = descriptionMatch ? descriptionMatch[1] : 'Time of Use';
         
         // Always use ETOUB as the rate code
-        mergedResults.billingInfo.rateSchedule = `ETOUB ${description}`;
+        //mergedResults.billingInfo.rateSchedule = `ETOUB ${description}`;
         
         if (originalRateSchedule !== mergedResults.billingInfo.rateSchedule) {
           console.log('Corrected rate schedule (fallback) from', originalRateSchedule, 'to', mergedResults.billingInfo.rateSchedule);
@@ -649,7 +649,7 @@ export async function extractBillInfo(text: string) {
         const description = descriptionMatch ? descriptionMatch[1] : 'Time of Use';
         
         // Always use ETOUB as the rate code
-        regexResults.billingInfo.rateSchedule = `ETOUB ${description}`;
+        //regexResults.billingInfo.rateSchedule = `ETOUB ${description}`;
         
         if (originalRateSchedule !== regexResults.billingInfo.rateSchedule) {
           console.log('Corrected rate schedule (regex-only) from', originalRateSchedule, 'to', regexResults.billingInfo.rateSchedule);
