@@ -22,7 +22,7 @@ if (!fs.existsSync(mappingsDir)) {
 }
 
 // Function to save a file mapping to disk
-export function saveFileMapping(fileId: string, filePath: string): void {
+function saveFileMapping(fileId: string, filePath: string): void {
   const mappingPath = path.join(mappingsDir, `${fileId}.json`);
   fs.writeFileSync(mappingPath, JSON.stringify({ filePath, timestamp: Date.now() }));
   // Also keep in memory for quick access
