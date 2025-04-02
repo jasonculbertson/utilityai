@@ -28,11 +28,9 @@ export async function processBill(filePath: string) {
     console.log('Extracted bill info:', JSON.stringify(billInfo, null, 2));
     
     console.log('OpenAI analysis complete, processing bill information...');
-    // Handle special cases like ETOIJ3 -> ETOUB
-    if (billInfo.billingInfo?.rateSchedule && billInfo.billingInfo.rateSchedule.includes('ETOIJ3')) {
-      console.log('Correcting rate schedule from ETOIJ3 to ETOUB...');
-      billInfo.billingInfo.rateSchedule = billInfo.billingInfo.rateSchedule.replace('ETOIJ3', 'ETOUB');
-    }
+    // We now use comprehensive rate plan validation in openai.ts
+    // No need for specific replacements here
+    console.log('Using validated rate plan:', billInfo.billingInfo?.rateSchedule);
     
     // Ensure service information is properly formatted based on user requirements
     if (billInfo.serviceInfo) {
