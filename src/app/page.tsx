@@ -652,6 +652,7 @@ export default function Home() {
                       <th className="p-3 text-left text-sm font-medium text-gray">Suggested Rate</th>
                       <th className="p-3 text-left text-sm font-medium text-gray">Projected Amount</th>
                       <th className="p-3 text-left text-sm font-medium text-gray">Savings</th>
+                      <th className="p-3 text-center text-sm font-medium text-gray">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -695,6 +696,19 @@ export default function Home() {
                                 <div className="text-xs text-gray">${data.yearlySavings}/yr</div>
                               </div>
                             ) : 'N/A'}
+                          </td>
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => {
+                                // Store this bill data in localStorage
+                                localStorage.setItem('billResult', JSON.stringify(bill));
+                                // Navigate to the detailed results page
+                                router.push('/results');
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                              View Details
+                            </button>
                           </td>
                         </tr>
                       );
