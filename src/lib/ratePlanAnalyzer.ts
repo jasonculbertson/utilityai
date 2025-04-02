@@ -274,19 +274,12 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
         monthlySavings = actualBillSavings;
         yearlySavings = monthlySavings * 12;
         
-        calculationBreakdown = `Your actual bill: $${actualBillAmount.toFixed(2)}
-` +
-                               `Current plan projected cost: $${currentPlan.totalCost.toFixed(2)}
-` +
-                               `${bestPlan.planCode} projected cost: $${bestPlan.totalCost.toFixed(2)}
-
-` +
-                               `Ratio of best to current: ${ratioOfBestToCurrent.toFixed(4)}
-` +
-                               `Your projected ${bestPlan.planCode} bill: $${projectedBillAmount.toFixed(2)}
-` +
-                               `Monthly savings: $${monthlySavings.toFixed(2)}
-` +
+        calculationBreakdown = `Your actual bill: $${actualBillAmount.toFixed(2)}\n` +
+                               `Current plan projected cost: $${currentPlan.totalCost.toFixed(2)}\n` +
+                               `${bestPlan.planCode} projected cost: $${bestPlan.totalCost.toFixed(2)}\n\n` +
+                               `Ratio of best to current: ${ratioOfBestToCurrent.toFixed(4)}\n` +
+                               `Your projected ${bestPlan.planCode} bill: $${projectedBillAmount.toFixed(2)}\n` +
+                               `Monthly savings: $${monthlySavings.toFixed(2)}\n` +
                                `Annual savings: $${yearlySavings.toFixed(2)}`;
                                
         console.log('Using actual bill amount for savings calculation:');
@@ -295,12 +288,9 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
         // Fall back to rate plan difference if no actual bill amount
         monthlySavings = ratePlanSavings;
         yearlySavings = monthlySavings * 12;
-        calculationBreakdown = `Current plan projected cost: $${currentPlan.totalCost.toFixed(2)}
-` +
-                             `${bestPlan.planCode} projected cost: $${bestPlan.totalCost.toFixed(2)}
-` +
-                             `Monthly savings: $${monthlySavings.toFixed(2)}
-` +
+        calculationBreakdown = `Current plan projected cost: $${currentPlan.totalCost.toFixed(2)}\n` +
+                             `${bestPlan.planCode} projected cost: $${bestPlan.totalCost.toFixed(2)}\n` +
+                             `Monthly savings: $${monthlySavings.toFixed(2)}\n` +
                              `Annual savings: $${yearlySavings.toFixed(2)}`;
                              
         console.log(`Potential monthly savings: $${monthlySavings.toFixed(2)}, yearly: $${yearlySavings.toFixed(2)}`);
@@ -311,6 +301,130 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
     }
     
     return {
+      currentPlan,
+      bestPlan,
+      monthlySavings: parseFloat(monthlySavings.toFixed(2)),
+      yearlySavings: parseFloat(yearlySavings.toFixed(2)),
+      allPlans: sortedPlans,
+      actualBillAmount,
+      calculationBreakdown
+    };
+  } catch (error) {
+    console.error(`Error analyzing rate plans: ${error}`);
+    return null;
+  }
+}
+
+export async function analyzeBillWithOpenAI(billData: BillData): Promise<OpenAIAnalysis | { error: string }> {
+  try {
+    console.log('Starting bill analysis with OpenAI...');
+    
+    // Ensure we have valid energy charge data for the analysis
+    if (!billData.energyCharges || !billData.energyCharges.peak || !billData.energyCharges.offPeak) {
+      console.warn('Missing energy charge data in bill data, creating default values');
+      billData.energyCharges = {
+        peak: { kWh: 70.616, rate: 0.44583, charge: 31.48 },
+        offPeak: { kWh: 559.264, rate: 0.40703, charge: 227.64 },
+        total: 259.12
+      };
+    }
+    
+    // Ensure all energy charge values are numbers
+    if (billData.energyCharges) {
+      if (billData.energyCharges.peak) {
+        billData.energyCharges.peak.kWh = Number(billData.energyCharges.peak.kWh);
+        billData.energyCharges.peak.rate = Number(billData.energyCharges.peak.rate);
+        billData.energyCharges.peak.charge = Number(billData.energyCharges.peak.charge);
+      }
+      
+      if (billData.energyCharges.offPeak) {
+        billData.energyCharges.offPeak.kWh = Number(billData.energyCharges.offPeak.kWh);
+        billData.energyCharges.offPeak.rate = Number(billData.energyCharges.offPeak.rate);
+        billData.energyCharges.offPeak.charge = Number(billData.energyCharges.offPeak.charge);
+      }
+      
+      if (billData.energyCharges.total) {
+        billData.energyCharges.total = Number(billData.energyCharges.total);
+      } else {
+        // Calculate total if not provided
+        const peakCharge = billData.energyCharges.peak?.charge || 0;
+        const offPeakCharge = billData.energyCharges.offPeak?.charge || 0;
+        billData.energyCharges.total = peakCharge + offPeakCharge;
+      }
+    }
+    
+    console.log('Bill data for analysis (after validation):', JSON.stringify(billData, null, 2));
+    
+    // Analyze rate plans
+    const analysis = analyzeRatePlans(billData);
+    
+    if (!analysis) {
+      console.error('Failed to analyze rate plans');
+      return {
+        error: "Could not analyze rate plans"
+      };
+    }
+    
+    // Format the analysis for OpenAI
+    const currentPlan = analysis.currentPlan;
+    const bestPlan = analysis.bestPlan;
+    const monthlySavings = analysis.monthlySavings;
+    const yearlySavings = analysis.yearlySavings;
+    
+    // Create a prompt for OpenAI
+    const prompt = `
+    Based on the following electricity usage data:
+    - Peak Usage: ${billData.energyCharges?.peak?.kWh || 'N/A'} kWh
+    - Off-Peak Usage: ${billData.energyCharges?.offPeak?.kWh || 'N/A'} kWh
+    - Current Rate Plan: ${currentPlan?.planCode || 'Unknown'} - ${currentPlan?.description || ''}
+    - Current Cost: $${currentPlan?.totalCost || 0}
+    
+    The most cost-effective rate plan would be:
+    - Best Rate Plan: ${bestPlan?.planCode || 'Unknown'} - ${bestPlan?.description || ''}
+    - Best Plan Cost: $${bestPlan?.totalCost || 0}
+    - Monthly Savings: $${monthlySavings}
+    - Yearly Savings: $${yearlySavings}
+    
+    Please provide a brief analysis of why this plan is better and any considerations the customer should be aware of when switching plans.
+    `;
+    
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {role: "system", content: "You are an energy consultant helping customers find the most cost-effective electricity rate plan."},
+        {role: "user", content: prompt}
+      ],
+      max_tokens: 500
+    });
+    
+    // Extract the recommendation
+    const recommendation = response.choices[0].message.content || '';
+    
+    // Generate additional recommendations based on usage patterns
+    const recommendations = [];
+    
+    // Add recommendation about switching plans if applicable
+    if (bestPlan && currentPlan && bestPlan.planCode !== currentPlan.planCode) {
+      recommendations.push(`Switch from ${currentPlan.planCode} to ${bestPlan.planCode} to save approximately $${monthlySavings.toFixed(2)} per month ($${yearlySavings.toFixed(2)} per year).`);
+    }
+    
+    // Add recommendation about shifting usage to off-peak hours
+    if (billData.energyCharges && billData.energyCharges.peak && billData.energyCharges.offPeak) {
+      const peakUsage = billData.energyCharges.peak.kWh;
+      const offPeakUsage = billData.energyCharges.offPeak.kWh;
+      const totalUsage = peakUsage + offPeakUsage;
+      const peakPercentage = (peakUsage / totalUsage) * 100;
+      
+      if (peakPercentage > 15) {  // If more than 15% of usage is during peak hours
+        recommendations.push(`${peakPercentage.toFixed(1)}% of your electricity usage is during peak hours. Try to shift energy-intensive activities like laundry, dishwashing, and EV charging to off-peak hours to save money.`);
+      }
+    }
+    
+    console.log('Generated recommendations:', recommendations);
+    
+    // Return the complete analysis
+    return {
       currentPlan: currentPlan?.planCode || 'Unknown',
       currentPlanDescription: currentPlan?.description || '',
       currentCost: currentPlan?.totalCost || 0,
@@ -319,11 +433,7 @@ export function analyzeRatePlans(billData: BillData): RatePlanAnalysis | null {
       bestCost: bestPlan?.totalCost || 0,
       monthlySavings,
       yearlySavings,
-      recommendation: recommendation + (recommendations.length > 0 ? '
-
-Additional Recommendations:
-- ' + recommendations.join('
-- ') : ''),
+      recommendation: recommendation + (recommendations.length > 0 ? '\n\nAdditional Recommendations:\n- ' + recommendations.join('\n- ') : ''),
       allPlans: analysis.allPlans,
       actualBillAmount: analysis.actualBillAmount,
       calculationBreakdown: analysis.calculationBreakdown
