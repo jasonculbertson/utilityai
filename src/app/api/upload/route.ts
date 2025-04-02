@@ -6,37 +6,50 @@ import { saveFileMapping, tempDir, fileMap, getFileMapping, deleteFileMapping } 
 
 export async function POST(request: NextRequest) {
   let filePath = '';
+  let uploadedFile: File | null = null;
   
   try {
-    console.log('Starting file upload process...');
+    console.log('Starting file upload process on server...');
 
     // Get the form data from the request
     console.log('Extracting form data...');
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    console.log('Request content-type:', request.headers.get('content-type'));
+    
+    try {
+      const formData = await request.formData();
+      console.log('FormData extracted successfully');
+      uploadedFile = formData.get('file') as File;
+      console.log('File from formData:', uploadedFile ? `Name: ${uploadedFile.name}, Size: ${uploadedFile.size}` : 'No file found');
 
-    if (!file) {
-      console.error('No file uploaded');
-      return NextResponse.json(
-        { success: false, error: 'No file uploaded' },
-        { status: 400 }
-      );
-    }
+      if (!uploadedFile) {
+        console.error('No file uploaded');
+        return NextResponse.json(
+          { success: false, error: 'No file uploaded' },
+          { status: 400 }
+        );
+      }
 
-    // Check if the file is a PDF
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      console.error('Invalid file type uploaded:', file.name);
+      // Check if the file is a PDF
+      if (!uploadedFile.name.toLowerCase().endsWith('.pdf')) {
+        console.error('Invalid file type uploaded:', uploadedFile.name);
+        return NextResponse.json(
+          { success: false, error: 'Only PDF files are supported' },
+          { status: 400 }
+        );
+      }
+    } catch (formError) {
+      console.error('Error extracting form data:', formError);
       return NextResponse.json(
-        { success: false, error: 'Only PDF files are supported' },
+        { success: false, error: 'Error processing form data' },
         { status: 400 }
       );
     }
 
     // Save the file to the temporary directory
     console.log('Saving uploaded file to temporary directory...');
-    const bytes = await file.arrayBuffer();
+    const bytes = await uploadedFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    filePath = path.join(tempDir, `${Date.now()}-${file.name}`);
+    filePath = path.join(tempDir, `${Date.now()}-${uploadedFile.name}`);
     fs.writeFileSync(filePath, buffer);
     console.log('File saved successfully:', filePath);
 
