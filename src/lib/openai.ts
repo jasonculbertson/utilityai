@@ -88,6 +88,7 @@ function extractWithRegex(text: string) {
     if (normalizedPlan === "ETOUC") return "E-TOU-C"; // Add proper formatting
     if (normalizedPlan === "ETOUD") return "E-TOU-D"; // Add proper formatting
     if (normalizedPlan === "El") return "E-1"; // Fix l/1 confusion
+    if (normalizedPlan === "EV2A") return "EV2-A"; // Handle EV2A format (without hyphen)
     
     // Check for ETOU rate plans using additional regex
     const etouMatch = etouRateRegex.exec(normalizedPlan);
