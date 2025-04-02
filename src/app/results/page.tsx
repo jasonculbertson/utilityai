@@ -20,6 +20,7 @@ interface BillResult {
   billingInfo: {
     billingPeriod: string;
     rateSchedule: string;
+    totalBillAmount?: number;
   };
   energyCharges: {
     peak: EnergyData;
@@ -33,6 +34,8 @@ interface BillResult {
     recommendedPlanEstimatedCost: string;
     potentialMonthlySavings: string;
     costByPlan: Array<{plan: string; cost: string}>;
+    calculationBreakdown?: string;
+    actualBillAmount?: number;
   };
 }
 
@@ -216,6 +219,20 @@ export default function ResultsPage() {
                 <p className="text-xl font-bold text-green-700">
                   {formatCurrency(Number(analysis.potentialMonthlySavings) * 12)}
                 </p>
+                
+                {analysis.calculationBreakdown && (
+                  <button 
+                    className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
+                    onClick={() => {
+                      // Use browser's alert for simplicity, but could be replaced with a modal
+                      alert(`Calculation Breakdown:
+
+${analysis.calculationBreakdown}`);
+                    }}
+                  >
+                    View Calculation Breakdown
+                  </button>
+                )}
               </div>
             )}
           </div>

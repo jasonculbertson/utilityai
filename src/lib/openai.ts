@@ -413,7 +413,7 @@ export async function extractBillInfo(text: string) {
         model: "gpt-4",
         messages: [
           {
-            role: "system",
+             role: "system",
             content: `Extract the following information from this PG&E bill text and return it as valid JSON. Do not include any explanations, just return the JSON object.
 
             1. Service Information:
@@ -427,6 +427,7 @@ export async function extractBillInfo(text: string) {
                - Look for "Rate Schedule:" followed by code and description
                - IMPORTANT: If you see "ETOIJ3" in the rate code, correct it to "ETOUB"
                - OCR might add spaces in dates like "1 2/1 1/2024" which should be "12/11/2024"
+               - Find the total bill amount, often near "Total amount due by" or "Total Current Charges"
 
             3. Electric Delivery Charges:
                - Look for "Energy Charges" section
@@ -449,7 +450,8 @@ export async function extractBillInfo(text: string) {
               },
               "billingInfo": {
                 "billingPeriod": "...",
-                "rateSchedule": "..."
+                "rateSchedule": "...",
+                "totalBillAmount": 0.0
               },
               "energyCharges": {
                 "peak": {
