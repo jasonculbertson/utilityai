@@ -1,8 +1,0 @@
-build:
-  docker:
-    web: Dockerfile
-
-setup:
-  config:
-    NODE_ENV: production
-    NPM_CONFIG_PRODUCTION: false
