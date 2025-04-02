@@ -211,25 +211,35 @@ export default function ResultsPage() {
               </div>
             </div>
             
-            {Number(analysis.potentialMonthlySavings) > 0 && (
-              <div className="p-3 bg-green-100 rounded-lg text-center">
-                <p className="text-gray-700">Potential Monthly Savings:</p>
-                <p className="text-xl font-bold text-green-700">{formatCurrency(analysis.potentialMonthlySavings)}</p>
-                <p className="text-gray-700 mt-1">Potential Annual Savings:</p>
-                <p className="text-xl font-bold text-green-700">
-                  {formatCurrency(Number(analysis.potentialMonthlySavings) * 12)}
-                </p>
-                
-                {analysis.calculationBreakdown && (
-                  <div className="mt-4 p-3 bg-gray-100 rounded-lg text-left">
-                    <h4 className="font-bold mb-2">Calculation Breakdown:</h4>
-                    <pre className="whitespace-pre-wrap text-sm p-2 bg-white rounded border border-gray-200">
-                      {analysis.calculationBreakdown}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Always show a savings or status section */}
+            <div className={`p-3 ${Number(analysis.potentialMonthlySavings) > 0 ? 'bg-green-100' : 'bg-blue-100'} rounded-lg text-center`}>
+              {Number(analysis.potentialMonthlySavings) > 0 ? (
+                <>
+                  <p className="text-gray-700">Potential Monthly Savings:</p>
+                  <p className="text-xl font-bold text-green-700">{formatCurrency(analysis.potentialMonthlySavings)}</p>
+                  <p className="text-gray-700 mt-1">Potential Annual Savings:</p>
+                  <p className="text-xl font-bold text-green-700">
+                    {formatCurrency(Number(analysis.potentialMonthlySavings) * 12)}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-700">Plan Status:</p>
+                  <p className="text-xl font-bold text-blue-700">You're already on the optimal plan</p>
+                  <p className="text-gray-700 mt-1">No additional savings available</p>
+                </>
+              )}
+              
+              {/* Always show calculation breakdown when available */}
+              {analysis.calculationBreakdown && (
+                <div className="mt-4 p-3 bg-gray-100 rounded-lg text-left">
+                  <h4 className="font-bold mb-2">Calculation Breakdown:</h4>
+                  <pre className="whitespace-pre-wrap text-sm p-2 bg-white rounded border border-gray-200">
+                    {analysis.calculationBreakdown}
+                  </pre>
+                </div>
+              )}
+            </div>
           </div>
           
           <h3 className="text-lg font-semibold mb-3">Detailed Rate Plan Comparison</h3>
@@ -281,13 +291,15 @@ export default function ResultsPage() {
                   <td className="py-3 px-6 text-center">{formatCurrency(analysis.currentPlanEstimatedCost)}</td>
                   <td className="py-3 px-6 text-center text-green-600">{formatCurrency(analysis.recommendedPlanEstimatedCost)}</td>
                 </tr>
-                {Number(analysis.potentialMonthlySavings) > 0 && (
-                  <tr className="border-b border-gray-200 font-medium bg-green-50">
-                    <td className="py-3 px-6 text-left">Potential Monthly Savings</td>
-                    <td className="py-3 px-6 text-center">-</td>
-                    <td className="py-3 px-6 text-center text-green-600">{formatCurrency(analysis.potentialMonthlySavings)}</td>
-                  </tr>
-                )}
+                <tr className={`border-b border-gray-200 font-medium ${Number(analysis.potentialMonthlySavings) > 0 ? 'bg-green-50' : 'bg-blue-50'}`}>
+                  <td className="py-3 px-6 text-left">Potential Monthly Savings</td>
+                  <td className="py-3 px-6 text-center">-</td>
+                  <td className="py-3 px-6 text-center ${Number(analysis.potentialMonthlySavings) > 0 ? 'text-green-600' : 'text-blue-600'}">
+                    {Number(analysis.potentialMonthlySavings) > 0 
+                      ? formatCurrency(analysis.potentialMonthlySavings)
+                      : 'Already Optimal'}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
