@@ -184,31 +184,38 @@ export async function processPdfWithOCR(pdfPath: string, apiKey: string): Promis
     let allText = '';
     let failedPages = 0;
     
-    // Process each page with OCR
-    for (let i = 0; i < pageFilePaths.length; i++) {
-      const pagePath = pageFilePaths[i];
-      console.log(`Processing page ${i + 1}/${pageFilePaths.length}...`);
-      
-      try {
-        // Process the page with OCR with retries
-        const ocrResult = await processPageWithOCR(pagePath, apiKey);
+    // Only process pages 1 and 3 (which are indices 0 and 2)
+    const pagesToProcess = [0, 2];
+    console.log(`Only processing pages 1 and 3 of the bill for efficiency...`);
+    
+    // Process only selected pages with OCR
+    for (const pageIndex of pagesToProcess) {
+      if (pageIndex < pageFilePaths.length) {
+        const pagePath = pageFilePaths[pageIndex];
+        const pageNumber = pageIndex + 1;
+        console.log(`Processing page ${pageNumber} (important billing info)...`);
         
-        // Extract text from OCR result
-        const pageText = extractTextFromOCRResult(ocrResult);
-        
-        // Add page header and text to all text
-        allText += `\n--- PAGE ${i + 1} ---\n${pageText}\n`;
-      } catch (err) {
-        const error = err as Error;
-        console.error(`Failed to process page ${i + 1} after multiple retries: ${error.message}`);
-        failedPages++;
-        
-        // Add error message to text
-        allText += `\n--- PAGE ${i + 1} ---\n[OCR PROCESSING FAILED: ${error.message || 'Unknown error'}]\n`;
-        
-        // If all pages have failed, throw an error
-        if (failedPages === pageFilePaths.length) {
-          throw new Error('All pages failed OCR processing. Please try again later or contact support.');
+        try {
+          // Process the page with OCR with retries
+          const ocrResult = await processPageWithOCR(pagePath, apiKey);
+          
+          // Extract text from OCR result
+          const pageText = extractTextFromOCRResult(ocrResult);
+          
+          // Add page header and text to all text
+          allText += `\n--- PAGE ${pageNumber} ---\n${pageText}\n`;
+        } catch (err) {
+          const error = err as Error;
+          console.error(`Failed to process page ${pageNumber} after multiple retries: ${error.message}`);
+          failedPages++;
+          
+          // Add error message to text
+          allText += `\n--- PAGE ${pageNumber} ---\n[OCR PROCESSING FAILED: ${error.message || 'Unknown error'}]\n`;
+          
+          // If all selected pages have failed, throw an error
+          if (failedPages === pagesToProcess.length) {
+            throw new Error('All selected pages failed OCR processing. Please try again later or contact support.');
+          }
         }
       }
     }
