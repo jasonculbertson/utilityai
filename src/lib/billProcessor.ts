@@ -39,6 +39,8 @@ export async function processBill(filePath: string) {
     // Ensure service information is properly formatted based on user requirements
     if (billInfo.serviceInfo) {
       console.log('Formatting service information...');
+      console.log('Before formatting service info:', JSON.stringify(billInfo.serviceInfo));
+      
       // Make sure customer name is in uppercase as per example
       if (billInfo.serviceInfo.customerName) {
         billInfo.serviceInfo.customerName = billInfo.serviceInfo.customerName.toUpperCase();
@@ -48,6 +50,38 @@ export async function processBill(filePath: string) {
       if (billInfo.serviceInfo.serviceAddress) {
         billInfo.serviceInfo.serviceAddress = billInfo.serviceInfo.serviceAddress.toUpperCase();
       }
+      
+      // If we don't have service address but have a successful OCR extraction, try to 
+      // extract it directly from the Service For section in the extracted text
+      if (!billInfo.serviceInfo.serviceAddress && extractedText) {
+        console.log('Trying alternative method to extract service address...');
+        const serviceForBlock = extractedText.match(/Service For:\s*([\s\S]*?)(?:\n\n|\n[^\s]|$)/i);
+        if (serviceForBlock && serviceForBlock[1]) {
+          const lines = serviceForBlock[1].split('\n')
+            .map(line => line.trim())
+            .filter(line => line);
+          
+          console.log('Service For block lines:', lines);
+          
+          // First line is customer name, second line is address
+          if (lines.length >= 2) {
+            billInfo.serviceInfo.serviceAddress = lines[1].toUpperCase();
+            console.log('Extracted service address from OCR text:', billInfo.serviceInfo.serviceAddress);
+          }
+          
+          // Third line is city, state, zip
+          if (lines.length >= 3) {
+            const cityStateZipParts = lines[2].match(/([^,]+),?\s*([A-Z]{2})\s*(\d{5})/i);
+            if (cityStateZipParts) {
+              billInfo.serviceInfo.city = cityStateZipParts[1].trim().toUpperCase();
+              billInfo.serviceInfo.state = cityStateZipParts[2];
+              billInfo.serviceInfo.zip = cityStateZipParts[3];
+            }
+          }
+        }
+      }
+      
+      console.log('After formatting service info:', JSON.stringify(billInfo.serviceInfo));
     }
     
     // Ensure energy charges are properly extracted

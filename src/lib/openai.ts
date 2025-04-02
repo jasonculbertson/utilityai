@@ -63,6 +63,7 @@ function extractWithRegex(text: string) {
       // Second line is usually the street address
       if (lines.length >= 2) {
         result.serviceInfo.serviceAddress = lines[1];
+        console.log('Extracted service address:', lines[1]);
       }
       
       // Third line is usually city, state, zip
@@ -72,9 +73,13 @@ function extractWithRegex(text: string) {
           result.serviceInfo.city = cityStateZipParts[1].trim();
           result.serviceInfo.state = cityStateZipParts[2];
           result.serviceInfo.zip = cityStateZipParts[3];
+          console.log('Extracted city, state, zip:', result.serviceInfo.city, result.serviceInfo.state, result.serviceInfo.zip);
         }
       }
     }
+    
+    // Log the extracted service info for debugging
+    console.log('Service info after extraction:', JSON.stringify(result.serviceInfo));
   } else {
     // Fallback to individual patterns
     const customerNameMatch = customerNameRegex.exec(text);
